@@ -1,27 +1,15 @@
 #ifndef SEARCH_H
 #define SEARCH_H
 
-typedef struct {
-    int* data;         
-    int top;           
-    int capacity;     
-} IntStack; // nr.lini 
+#include <stdio.h>
+#include "../data/stack.h"
 
-typedef struct {
-    char* word;       
-    IntStack lines;    
-} Word;// słowa
+typedef struct LineList {
+    int lineNumber;
+    struct LineList* next;
+} LineList;
 
-typedef struct {
-    Word* data;        
-    int top;          
-    int capacity;     
-} Stack;// line
-
-
-void initStack(Stack* stack, int capacity);
-void freeStack(Stack* stack);
-void findWordAndPushLine(Stack* stack, const char* word, int line);
-void printStack(const Stack* stack);
-
-#endif 
+LineList* searchWord(Stack* fileStack, const char* targetWord);
+void freeLineList(LineList* list);
+void printLineNumbers(LineList* list, const char* targetWord);
+#endif

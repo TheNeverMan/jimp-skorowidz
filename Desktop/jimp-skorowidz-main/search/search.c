@@ -1,60 +1,44 @@
-#include "search/search.h"
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
+#include "../data/stack.h"
+#include "../print/print.h"
 
-void initStack(Stack* stack, int capacity) {
-    stack->data = malloc(sizeof(Word) * capacity);
-    stack->top = -1;
-    stack->capacity = capacity;
+void addLine(LineList** list, int lineNumber) {
+    LineList* newLine = malloc(sizeof(LineList));
+    newLine->lineNumber = lineNumber;
+    newLine->next = *list;
+    *list = newLine;
 }
 
-void freeStack(Stack* stack) {
-    for (int i = 0; i <= stack->top; i++) {
-        free(stack->data[i].word);
-        free(stack->data[i].lines.data);
-    }
-    free(stack->data);
-}
+LineList* searchWord(Stack* fileStack, const char* targetWord) {
+    LineList* resultList = NULL;
+    stackElement* currentElement = fileStack->last;
+    char line[1024];
+    int lineNumber = 0;
 
-void findWordAndPushLine(Stack* stack, const char* word, int line) {
-    for (int i = 0; i <= stack->top; i++) {
-        if (strcmp(stack->data[i].word, word) == 0) {
-            IntStack* lines = &stack->data[i].lines;
-            for (int j = 0; j <= lines->top; j++) {
-                if (lines->data[j] == line) {
-                    return;
+    while (currentElement != NULL) {
+        FILE* file = (FILE*)currentElement->data;
+        
+        if (file) {
+            lineNumber = 0;
+            while (fgets(line, sizeof(line), file) != NULL) {
+                lineNumber++;
+                printf("linia %d, target słowo %s: %s", lineNumber, targetWord, line);
+                if (strstr(line, targetWord)) {
+                    addLine(&resultList, lineNumber);
                 }
             }
-            if (lines->top + 1 >= lines->capacity) {
-                lines->capacity *= 2;
-                lines->data = realloc(lines->data, sizeof(int) * lines->capacity);
-            }
-            lines->data[++lines->top] = line;
-            return;
         }
+
+        currentElement = currentElement->prev;
     }
 
-    if (stack->top + 1 >= stack->capacity) {
-        stack->capacity *= 2;
-        stack->data = realloc(stack->data, sizeof(Word) * stack->capacity);
-    }
-
-    Word* newWord = &stack->data[++stack->top];
-    newWord->word = malloc(strlen(word) + 1);
-    strcpy(newWord->word, word);
-    newWord->lines.data = malloc(sizeof(int) * 10);
-    newWord->lines.top = 0;
-    newWord->lines.capacity = 10;
-    newWord->lines.data[0] = line;
+    return resultList;
 }
 
-void printStack(const Stack* stack) {
-    for (int i = 0; i <= stack->top; i++) {
-        printf("Word: %s, Lines: ", stack->data[i].word);
-        for (int j = 0; j <= stack->data[i].lines.top; j++) {
-            printf("%d ", stack->data[i].lines.data[j]);
-        }
-        printf("\n");
+void freeLineList(LineList* list) {
+    while (list != NULL) {
+        LineList* temp = list;
+        list = list->next;
+        free(temp);
     }
 }

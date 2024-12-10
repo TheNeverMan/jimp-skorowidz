@@ -1,55 +1,70 @@
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "read/read.h"
-#include "search/search.h"
+#include "../read/read.h"
+#include "../search/search.h"
+#include "../print/print.h"
 
-// Funkcja do wypisywania zawartości stosu
-void printStack(const Stack* stack) {
-    for (int i = 0; i <= stack->top; i++) {
-        printf("Word: %s, Lines: ", stack->data[i].word);
-        for (int j = 0; j <= stack->data[i].lines.top; j++) {
-            printf("%d ", stack->data[i].lines.data[j]);
+void printLoadedStack(Stack* testStack)
+{
+    Stack* lineStack = (Stack*)popFromStack(testStack);
+    printf("{ \n");
+    while(lineStack)
+    {
+        char* word = (char*)popFromStack(lineStack);
+        printf("{ ");
+        while(word)
+        {
+            printf("%s, ", word);
+            free(word);
+            word = (char*)popFromStack(lineStack);
         }
-        printf("\n");
+        printf("}, \n");
+        free(lineStack);
+        lineStack = (Stack*)popFromStack(testStack);
     }
-}
-
-// Testowanie wczytania pliku i jego struktury
-void testLoadingFile() {
-    Stack* testStack = readFile("testfile.txt");
-    puts("Test Loading File");
-    puts("testfile.txt loaded to stack structure:");
-    printStack(testStack);  // Drukowanie całego stosu
+    printf("}\n");
     free(testStack);
 }
 
-// Testowanie integracji wyszukiwania
-void testSearchIntegration() {
-    // Wczytanie pliku do stosu
-    Stack* fileStack = readFile("testfile.txt");
+void testSearchWord() {
+    Stack* testStack = readFile("testfile.txt");
+    if (testStack == NULL) {
+        printf("Error loading file!\n");
+        return;
+    }
 
-    // Inicjalizacja stosu dla słów
-    Stack wordStack;
-    initStack(&wordStack, 5);  // Zakładając, że initStack alokuje odpowiednią pamięć
+    const char* targetWords[] = {"ma", "Ola"};
+    size_t wordCount = sizeof(targetWords) / sizeof(targetWords[0]);
 
-    // Przetwarzanie pliku (mapowanie słów na numery linii)
-    processFileWithSearch(fileStack, &wordStack);
+    size_t i;
+    LineList* result;
 
-    puts("Test Search Integration");
-    printStack(&wordStack);  // Funkcja do wypisania zawartości stosu słów
+    for (i = 0; i < wordCount; i++) {
+        const char* targetWord = targetWords[i];
+        printf("Searching for word: '%s'\n", targetWord);
 
-    // Zwolnienie pamięci
-    freeStack(&wordStack);
-    free(fileStack);
+        result = searchWord(testStack, targetWord);
+
+        if (result != NULL) {
+            printf("Found occurrences of '%s':\n", targetWord);
+            printLineNumbers(result, targetWord); 
+            freeLineList(result); 
+        } else {
+            printf("No occurrences of '%s' found.\n", targetWord);
+        }
+    }
 }
 
-int main() {
-    // Testowanie wczytania pliku
+void testLoadingFile()
+{
+    Stack* testStack = readFile("testfile.txt");
+    puts("Test Loading File");
+    puts("testfile.txt loaded to stack structure:");
+    printLoadedStack(testStack);
+}
+
+int main()
+{
     testLoadingFile();
-
-    // Testowanie integracji wyszukiwania
-    testSearchIntegration();
-
+    testSearchWord();  
     return 0;
 }
