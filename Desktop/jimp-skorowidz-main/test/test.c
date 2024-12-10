@@ -25,6 +25,36 @@ void printLoadedStack(Stack* testStack)
     free(testStack);
 }
 
+void testPrintWithData()
+{
+    printf("Testing Print with Hardcoded Data:\n");
+    Stack* testStack;
+    Stack* line1;
+    Stack* line2;
+    Stack* line3;
+    const char* targetWords[] = {"ma", "Ola", "notfound"};
+    testStack = createNewEmptyStack();
+    
+    line1 = createNewEmptyStack();
+    pushToStack(line1, "Hello");
+    pushToStack(line1, "world");
+    pushToStack(testStack, line1);
+
+    line2 = createNewEmptyStack();
+    pushToStack(line2, "This");
+    pushToStack(line2, "is");
+    pushToStack(line2, "a");
+    pushToStack(line2, "test");
+    pushToStack(testStack, line2);
+
+    line3 = createNewEmptyStack();
+    pushToStack(line3, "Another");
+    pushToStack(line3, "line");
+    pushToStack(testStack, line3);
+
+    printLoadedStack(testStack);
+}
+
 void testSearchWord() {
     Stack* testStack = readFile("testfile.txt");
     if (testStack == NULL) {
@@ -36,18 +66,21 @@ void testSearchWord() {
     size_t wordCount = sizeof(targetWords) / sizeof(targetWords[0]);
 
     size_t i;
-    LineList* result;
+    int* result;
+    int resultSize;
 
     for (i = 0; i < wordCount; i++) {
         const char* targetWord = targetWords[i];
         printf("Searching for word: '%s'\n", targetWord);
 
-        result = searchWord(testStack, targetWord);
+        result = searchWord(testStack, targetWord, &resultSize);
 
         if (result != NULL) {
             printf("Found occurrences of '%s':\n", targetWord);
-            printLineNumbers(result, targetWord); 
-            freeLineList(result); 
+            for (int j = 0; j < resultSize; j++) {
+                printf("Line %d\n", result[j]);
+            }
+            free(result);
         } else {
             printf("No occurrences of '%s' found.\n", targetWord);
         }
@@ -64,7 +97,9 @@ void testLoadingFile()
 
 int main()
 {
-    testLoadingFile();
     testSearchWord();  
+    testLoadingFile();
+    testPrintWithData();
+    
     return 0;
 }

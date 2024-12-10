@@ -2,8 +2,7 @@
 #define PRINT_H
 
 #include <stdio.h>
-#include "../search/search.h"  
 
-void printLineNumbers(LineList* list, const char* targetWord);
+void printLineNumber(int* list, int resultSize, const char* targetWord);
 
-#endif 
+#endif

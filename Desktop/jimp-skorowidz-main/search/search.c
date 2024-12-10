@@ -2,43 +2,36 @@
 #include "../data/stack.h"
 #include "../print/print.h"
 
-void addLine(LineList** list, int lineNumber) {
-    LineList* newLine = malloc(sizeof(LineList));
-    newLine->lineNumber = lineNumber;
-    newLine->next = *list;
-    *list = newLine;
-}
 
-LineList* searchWord(Stack* fileStack, const char* targetWord) {
-    LineList* resultList = NULL;
-    stackElement* currentElement = fileStack->last;
-    char line[1024];
-    int lineNumber = 0;
+int* searchWord(Stack* stack, const char* targetWord, int* resultSize) {
+    stackElement* iterator;
+    *resultSize = 0;
+    int* result = NULL;
 
-    while (currentElement != NULL) {
-        FILE* file = (FILE*)currentElement->data;
-        
-        if (file) {
-            lineNumber = 0;
-            while (fgets(line, sizeof(line), file) != NULL) {
-                lineNumber++;
-                printf("linia %d, target słowo %s: %s", lineNumber, targetWord, line);
-                if (strstr(line, targetWord)) {
-                    addLine(&resultList, lineNumber);
-                }
+    assert(stack != NULL);
+    iterator = stack->last;
+
+    int lineNumber = 1;
+
+    while (iterator != NULL) {
+        char* line = (char*)iterator->data;
+        if (strstr(line, targetWord) != NULL) {
+            (*resultSize)++;
+            result = realloc(result, (*resultSize) * sizeof(int));
+
+            if (result == NULL) {
+                perror("Reallocation failed");
+                exit(1);
             }
+
+            result[(*resultSize) - 1] = lineNumber;
         }
-
-        currentElement = currentElement->prev;
+        iterator = iterator->prev;
+        lineNumber++;
     }
 
-    return resultList;
+    return result;
 }
 
-void freeLineList(LineList* list) {
-    while (list != NULL) {
-        LineList* temp = list;
-        list = list->next;
-        free(temp);
-    }
-}
+
+
