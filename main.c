@@ -7,7 +7,6 @@ int main(int argc, char** argv)
 {
   Stack* dataFromFile = NULL;
   int i;
-  LineList* result;
 
   if (argc < 3) {
     puts("Brak podanych argumentów! Użycie: ./skorowidz <plik> <słowo1> [słowo2] ...");
@@ -21,14 +20,16 @@ int main(int argc, char** argv)
   }
 
   for (i = 2; i < argc; i++) {
+    int resultSize = 0;
+    int* result = NULL;
     const char* targetWord = argv[i];
     printf("Szukam słowa: '%s'\n", targetWord);
 
-    result = searchWord(dataFromFile, targetWord);
+    result = searchWord(dataFromFile, targetWord, &resultSize);
 
     if (result) {
-      printLineNumbers(result, targetWord);
-      freeLineList(result);
+      printLineNumber(result, resultSize, targetWord);
+      free(result);
     } else {
       printf("Nie znaleziono słowa '%s' w pliku.\n", targetWord);
     }
